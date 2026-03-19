@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কোম্পানি রেজিস্ট্রেশন - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { max-width: 400px; width: 90%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #8e44ad; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #8e44ad; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+        }
+        button:hover { background: #732d91; }
+        
+        .back-link { 
+            display: block; 
+            text-align: center; 
+            margin-top: 20px; 
+            text-decoration: none; 
+            color: #7f8c8d; 
+            font-size: 14px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2><i class="fa-solid fa-building-circle-check"></i> নতুন কোম্পানি যোগ</h2>
+        
+        <form id="companyRegForm">
+            <div class="form-group">
+                <label>কোম্পানির নাম</label>
+                <input type="text" id="compName" placeholder="যেমন: এসিআই, প্রাণ, ফ্রেশ" required>
+            </div>
+            
+            <div class="form-group">
+                <label>মোবাইল নম্বর</label>
+                <input type="text" id="compPhone" placeholder="কোম্পানি বা এসআর এর নম্বর" required>
+            </div>
+            
+            <div class="form-group">
+                <label>ঠিকানা / অফিস (ঐচ্ছিক)</label>
+                <input type="text" id="compAddress" placeholder="কোম্পানির ঠিকানা">
+            </div>
+            
+            <button type="submit" id="regBtn">রেজিস্ট্রেশন সম্পন্ন করুন</button>
+        </form>
+
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> ড্যাশবোর্ডে ফিরে যান</a>
+    </div>
+
+    <script>
+        document.getElementById('companyRegForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const regBtn = document.getElementById('regBtn');
+            regBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ হচ্ছে...';
+            regBtn.disabled = true;
+
+            const data = {
+                name: document.getElementById('compName').value,
+                phone: document.getElementById('compPhone').value,
+                address: document.getElementById('compAddress').value,
+                totalDue: 0 // নতুন কোম্পানি হিসেবে শুরুতে কোনো বাকি নেই
+            };
+
+            try {
+                // আপনার দেওয়া API লিঙ্কে ডাটা পাঠানো হচ্ছে
+                const res = await fetch('/api/companies/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    alert("কোম্পানি রেজিস্ট্রেশন সফল হয়েছে!");
+                    location.href = 'index.html'; // ড্যাশবোর্ডে ফিরে যাবে
+                } else {
+                    alert("ভুল হয়েছে: " + result.msg);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("সার্ভারে সমস্যা হচ্ছে! দয়া করে টার্মিনাল চেক করুন।");
+            } finally {
+                regBtn.innerHTML = 'রেজিস্ট্রেশন সম্পন্ন করুন';
+                regBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পণ্য ক্রয় / স্টক ইন - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        header { background: #34495e; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
+        header a { color: white; text-decoration: none; }
+
+        .purchase-container { max-width: 800px; margin: 15px auto; padding: 0 10px; }
+
+        /* টপ কন্ট্রোল */
+        .top-control { 
+            background: white; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        
+        /* বারকোড ও ক্যামেরা সারি */
+        .barcode-row { display: flex; gap: 10px; align-items: center; position: relative; }
+        .barcode-row input { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 1.1rem; box-sizing: border-box; }
+        .scan-icon { font-size: 1.5rem; color: #3498db; cursor: pointer; padding: 10px; background: #ebf5fb; border-radius: 10px; }
+
+        /* সংখ্যা ও মোড সারি (বারকোডের নিচে) */
+        .qty-mode-row { margin-top: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .qty-box { display: flex; align-items: center; gap: 10px; }
+        .qty-box input { width: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; text-align: center; font-size: 1rem; }
+        
+        .mode-selection { display: flex; gap: 10px; }
+        .mode-btn { 
+            padding: 10px 20px; border-radius: 8px; border: 1px solid #ddd; 
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .mode-btn.active { background: #3498db; color: white; border-color: #3498db; }
+
+        /* কোম্পানি সিলেকশন */
+        .company-box { 
+            background: #fff; padding: 15px; border-radius: 15px; 
+            margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; font-size: 1rem; }
+
+        /* ইনভয়েস টেবিল */
+        .invoice-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 0.85rem; color: #7f8c8d; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
+        input.table-input { width: 70px; padding: 8px; border: 1px solid #eee; border-radius: 5px; text-align: center; }
+
+        /* ফুটার: সেভ বাটন বামে, টোটাল ডানে */
+        .footer-total { padding: 25px; background: #fff; border-top: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .btn-save { background: #3498db; color: white; padding: 15px 35px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; order: 1; transition: 0.3s; }
+        .btn-save:hover { background: #2980b9; }
+        
+        .total-info { text-align: right; order: 2; }
+        .total-amount { font-size: 2.2rem; font-weight: bold; color: #3498db; margin: 0; }
+
+        #suggestions { position: absolute; top: 60px; left: 0; width: 85%; background: white; border: 1px solid #ddd; z-index: 100; border-radius: 8px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .sug-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        
+        /* ক্যামেরা মডাল */
+        #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+        #reader { width: 300px; background: white; border-radius: 10px; overflow: hidden; }
+        .close-scanner { color: white; margin-top: 20px; cursor: pointer; border: 1px solid white; padding: 10px 25px; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+    <span><i class="fa-solid fa-truck-ramp-box"></i> পণ্য ক্রয় / স্টক এন্ট্রি</span>
+</header>
+
+<div class="purchase-container">
+    <!-- টপ কন্ট্রোল -->
+    <div class="top-control">
+        <div class="barcode-row">
+            <input type="text" id="barcodeInput" placeholder="বারকোড স্ক্যান করুন বা নাম লিখুন..." autocomplete="off">
+            <i class="fa-solid fa-camera scan-icon" onclick="openScanner()"></i>
+            <div id="suggestions"></div>
+        </div>
+
+        <div class="qty-mode-row">
+            <div class="qty-box">
+                <label style="color: #888; font-size: 0.9rem;">পরিমাণ (Qty):</label>
+                <input type="number" id="qtyInput" value="1" min="1">
+            </div>
+            <div class="mode-selection">
+                <div id="cashBtn" class="mode-btn active" onclick="setMode('cash')">Cash</div>
+                <div id="creditBtn" class="mode-btn" onclick="setMode('credit')">Credit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- কোম্পানি সিলেকশন -->
+    <div class="company-box">
+        <label style="font-weight: bold; color: #555;">কোম্পানি / সাপ্লায়ার সিলেক্ট করুন</label>
+        <select id="companySelect">
+            <option value="">কোম্পানি বেছে নিন</option>
+        </select>
+    </div>
+
+    <!-- ইনভয়েস টেবিল (৫ কলাম) -->
+    <div class="invoice-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>বারকোড</th>
+                    <th>পণ্যের নাম</th>
+                    <th>কেনা দাম</th>
+                    <th>বেচা দাম</th>
+                    <th>পরিমাণ</th>
+                </tr>
+            </thead>
+            <tbody id="purchaseBody"></tbody>
+        </table>
+        
+        <div class="footer-total">
+            <button class="btn-save" id="saveBtn" onclick="savePurchase()">স্টক সেভ করুন</button>
+            <div class="total-info">
+                <small>মোট ক্রয় মূল্য</small>
+                <p class="total-amount" id="grandTotal">৳ ০</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ক্যামেরা মডাল -->
+<div id="scanner-modal">
+    <div id="reader"></div>
+    <div class="close-scanner" onclick="closeScanner()">বন্ধ করুন</div>
+</div>
+
+<script src="js/products.js"></script>
+</body>
+</html>

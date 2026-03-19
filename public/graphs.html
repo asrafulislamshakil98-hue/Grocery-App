@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বিক্রয় গ্রাফ - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        header { text-align: center; margin-bottom: 30px; }
+        .back-btn { text-decoration: none; color: #3498db; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        canvas { width: 100% !important; height: 400px !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-house"></i> ড্যাশবোর্ডে ফিরে যান</a>
+    
+    <header>
+        <h2><i class="fa-solid fa-chart-line"></i> গত ৩০ দিনের বিক্রয় রিপোর্ট (গ্রাফ)</h2>
+    </header>
+
+    <!-- গ্রাফ এখানে দেখাবে -->
+    <canvas id="salesChart"></canvas>
+</div>
+
+<script src="js/graphs.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+const express = require('express');
+const router = express.Router();
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const upload = require('../config/cloudinary'); // Multer & Cloudinary কনফিগ
+
+// ১. নতুন ইউজার (মালিক) রেজিস্ট্রেশন
+router.post('/register', async (req, res) => {
+    try {
+        const { username, password, shopName, address, phone } = req.body;
+
+        // চেক করা হচ্ছে ইউজার আগে থেকেই আছে কি না
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(400).json({ msg: "এই ইউজার নেমটি আগেই ব্যবহার হয়েছে!" });
+
+        // পাসওয়ার্ড এনক্রিপ্ট করা
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = new User({
+            username,
+            password: hashedPassword,
+            shopName,
+            address,
+            phone
+        });
+
+        await newUser.save();
+        res.status(201).json({ msg: "রেজিস্ট্রেশন সফল! এখন লগইন করুন।" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ২. লগইন রাউট
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+
+        if (!user) return res.status(400).json({ msg: "ইউজার পাওয়া যায়নি!" });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ msg: "ভুল পাসওয়ার্ড!" });
+
+        // সেশনে ইউজার আইডি সেভ করা
+        req.session.userId = user._id;
+        res.json({ msg: "লগইন সফল!", success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ৩. বর্তমান ইউজার চেক করা
+router.get('/current-user', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ msg: "লগইন নেই" });
+    const user = await User.findById(req.session.userId).select('-password');
+    res.json(user);
+});
+
+// ৪. লগআউট
+router.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login.html');
+});
+
+// প্রোফাইল এবং লোগো আপডেট করার এপিআই
+router.put('/update-profile', upload.single('logo'), async (req, res) => {
+    try {
+        if (!req.session.userId) return res.status(401).json({ msg: "লগইন নেই" });
+
+        const { shopName, address } = req.body;
+        let updateData = { shopName, address };
+
+        // যদি নতুন কোনো ছবি আপলোড করা হয়
+        if (req.file) {
+            updateData.shopLogo = req.file.path; // ক্লাউডিনারি ছবির ইউআরএল (URL)
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.session.userId, 
+            updateData, 
+            { new: true }
+        );
+
+        res.json({ msg: "প্রোফাইল ও লোগো আপডেট হয়েছে!", user: updatedUser });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;

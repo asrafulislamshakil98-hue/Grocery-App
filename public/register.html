@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রেজিস্ট্রেশন - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+        p { text-align: center; font-size: 0.9rem; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>দোকান রেজিস্ট্রেশন</h2>
+        <form id="regForm">
+            <input type="text" id="shopName" placeholder="দোকানের নাম" required>
+            <input type="text" id="username" placeholder="ইউজার নেম" required>
+            <input type="password" id="password" placeholder="পাসওয়ার্ড" required>
+            <input type="text" id="phone" placeholder="মোবাইল নম্বর">
+            <button type="submit" id="regBtn">অ্যাকাউন্ট তৈরি করুন</button>
+        </form>
+        <p>আগে থেকেই অ্যাকাউন্ট আছে? <a href="login.html" style="color:#3498db; text-decoration:none; font-weight:bold;">লগইন করুন</a></p>
+    </div>
+
+    <script>
+        
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('regBtn');
+            btn.innerText = "কাজ চলছে...";
+            
+            const data = {
+                shopName: document.getElementById('shopName').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert(result.msg);
+                    window.location.href = 'login.html';
+                } else {
+                    alert(result.msg);
+                    btn.innerText = "অ্যাকাউন্ট তৈরি করুন";
+                }
+            } catch (err) {
+                alert("সার্ভারে সমস্যা হচ্ছে!");
+                btn.innerText = "অ্যাকাউন্ট তৈরি করুন";
+            }
+        });
+    </script>
+</body>
+</html>

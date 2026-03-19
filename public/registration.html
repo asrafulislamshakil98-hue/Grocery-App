@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রেজিস্ট্রেশন মেনু - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        header { background: #2c3e50; color: white; padding: 20px; text-align: center; font-size: 1.2rem; }
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .reg-btn {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .reg-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+
+        .reg-btn i { font-size: 3rem; margin-bottom: 15px; }
+        .reg-btn span { font-size: 1.1rem; font-weight: bold; }
+
+        .cust-color { color: #1abc9c; border-bottom: 5px solid #1abc9c; }
+        .comp-color { color: #8e44ad; border-bottom: 5px solid #8e44ad; }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <i class="fa-solid fa-user-plus"></i> রেজিস্ট্রেশন কেন্দ্র
+</header>
+
+<div class="container">
+    <div class="menu-grid">
+        <!-- নতুন কাস্টমার বাটন -->
+        <a href="register-customer.html" class="reg-btn cust-color">
+            <i class="fa-solid fa-users"></i>
+            <span>নতুন কাস্টমার<br>রেজিস্ট্রেশন</span>
+        </a>
+
+        <!-- নতুন কোম্পানি বাটন -->
+        <a href="register-company.html" class="reg-btn comp-color">
+            <i class="fa-solid fa-building-circle-check"></i>
+            <span>নতুন কোম্পানি<br>রেজিস্ট্রেশন</span>
+        </a>
+
+        <a href="register-product.html" class="reg-btn prod-color" style="color: #e67e22; border-bottom: 5px solid #e67e22;">
+           <i class="fa-solid fa-barcode"></i>
+           <span>নতুন পণ্য<br>রেজিস্ট্রেশন</span>
+        </a>
+    </div>
+
+    <a href="index.html" class="back-btn">
+        <i class="fa-solid fa-house"></i> ড্যাশবোর্ডে ফিরে যান
+    </a>
+</div>
+
+</body>
+</html>

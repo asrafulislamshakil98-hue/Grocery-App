@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>দৈনিক খরচ - ডিজিটাল মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #e74c3c; margin-top: 0; }
+        .back-btn { text-decoration: none; color: #333; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
+        
+        /* ইনপুট স্টাইল */
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .save-btn { width: 100%; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+
+        /* তারিখ অনুযায়ী কার্ড */
+        .date-card { 
+            background: #fff; padding: 15px; border-radius: 12px; margin-top: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; border: 1px solid #eee; border-left: 5px solid #e74c3c;
+            transition: 0.3s;
+        }
+        .date-card:hover { background: #fef2f2; transform: scale(1.02); }
+        .date-info b { font-size: 1.1rem; color: #2c3e50; }
+        .date-info div { font-size: 0.8rem; color: #7f8c8d; }
+        .total-amt { font-size: 1.2rem; font-weight: bold; color: #e74c3c; }
+
+        /* মডাল পপআপ */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
+        .modal-content { background:white; width:90%; max-width:400px; padding:25px; border-radius:20px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ব্যাক</a>
+    <h2><i class="fa-solid fa-wallet"></i> দৈনিক খরচ যোগ</h2>
+
+    <form id="expForm">
+        <input type="text" id="title" placeholder="খরচের নাম (যেমন: কারেন্ট বিল)" required>
+        <input type="number" id="amount" placeholder="টাকার পরিমাণ" required>
+        <button type="submit" class="save-btn" id="saveBtn">খরচ সেভ করুন</button>
+    </form>
+
+    <div id="expenseSummaryList">
+        <!-- তারিখ অনুযায়ী গ্রুপ ডাটা এখানে আসবে -->
+        <p style="text-align:center; color:#999; margin-top:20px;">লোড হচ্ছে...</p>
+    </div>
+</div>
+
+<!-- বিস্তারিত দেখার পপআপ -->
+<div id="expenseModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalDateTitle" style="text-align:center; color:#e74c3c; margin-top:0;"></h3>
+        <div id="modalDetails"></div>
+        <button onclick="closeModal()" style="width:100%; margin-top:20px; padding:12px; background:#bdc3c7; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">বন্ধ করুন</button>
+    </div>
+</div>
+
+<script>
+    // ১. খরচ সেভ করা
+    document.getElementById('expForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true; btn.innerText = "সেভ হচ্ছে...";
+
+        const data = { title: document.getElementById('title').value, amount: document.getElementById('amount').value };
+
+        try {
+            const res = await fetch('/api/expenses/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) {
+                document.getElementById('expForm').reset();
+                loadExpenseSummary(); // লিস্ট রিফ্রেশ
+            }
+        } catch (err) { alert("সার্ভার এরর!"); }
+        finally { btn.disabled = false; btn.innerText = "খরচ সেভ করুন"; }
+    });
+
+    // ২. তারিখ অনুযায়ী সামারি লোড করা
+    async function loadExpenseSummary() {
+        try {
+            const res = await fetch('/api/expenses/summary');
+            const data = await res.json();
+            const listDiv = document.getElementById('expenseSummaryList');
+            listDiv.innerHTML = '<h3 style="font-size:1rem; color:#666; margin-top:25px;">খরচের ইতিহাস:</h3>';
+
+            if(data.length === 0) {
+                listDiv.innerHTML += '<p style="text-align:center; color:#999;">কোনো খরচ পাওয়া যায়নি।</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                const dateParts = item._id.split('-');
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                
+                listDiv.innerHTML += `
+                    <div class="date-card" onclick="showDateDetails('${item._id}')">
+                        <div class="date-info">
+                            <b>${formattedDate}</b>
+                            <div>${item.count} টি খরচ রেকর্ড</div>
+                        </div>
+                        <div class="total-amt">৳ ${item.totalAmount}</div>
+                    </div>
+                `;
+            });
+        } catch (err) { console.log(err); }
+    }
+
+    // ৩. নির্দিষ্ট তারিখের বিস্তারিত দেখানো
+    async function showDateDetails(dateStr) {
+        try {
+            const res = await fetch(`/api/expenses/date/${dateStr}`);
+            const expenses = await res.json();
+            
+            document.getElementById('modalDateTitle').innerText = dateStr + " এর বিস্তারিত";
+            const detailsDiv = document.getElementById('modalDetails');
+            detailsDiv.innerHTML = '';
+
+            expenses.forEach(ex => {
+                detailsDiv.innerHTML += `
+                    <div class="detail-row">
+                        <span>${ex.title}</span>
+                        <b>৳ ${ex.amount}</b>
+                    </div>
+                `;
+            });
+            document.getElementById('expenseModal').style.display = 'flex';
+        } catch (err) { alert("ডাটা পাওয়া যায়নি!"); }
+    }
+
+    function closeModal() { document.getElementById('expenseModal').style.display = 'none'; }
+
+    // পেজ লোড হলে কল হবে
+    loadExpenseSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কোম্পানি হিসাব - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        header { background: #8e44ad; color: white; padding: 15px; text-align: center; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        
+        /* ট্যাব বাটন স্টাইল */
+        .tab-grid { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { 
+            flex: 1; padding: 15px; border-radius: 12px; border: none;
+            background: white; color: #7f8c8d; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center;
+        }
+        .tab-btn.active { background: #8e44ad; color: white; }
+        .tab-btn i { font-size: 1.5rem; margin-bottom: 5px; }
+
+        /* কোম্পানি কার্ড */
+        .company-card {
+            background: white; padding: 15px; border-radius: 12px;
+            margin-bottom: 10px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #8e44ad;
+        }
+        .info b { font-size: 1.1rem; color: #2d3436; }
+        .info div { font-size: 0.8rem; color: #95a5a6; }
+        .due-amount { color: #e74c3c; font-weight: bold; font-size: 1.2rem; }
+        .cash-status { color: #27ae60; font-weight: bold; font-size: 0.9rem; }
+
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: #8e44ad; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><i class="fa-solid fa-building"></i> কোম্পানি ও সাপ্লায়ার</h1>
+</header>
+
+<div class="container">
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ড্যাশবোর্ডে ফিরে যান</a>
+
+    <div class="tab-grid">
+        <button class="tab-btn active" id="bakiBtn" onclick="showList('baki')">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>বাকি কোম্পানি</span>
+        </button>
+        <button class="tab-btn" id="cashBtn" onclick="showList('cash')">
+            <i class="fa-solid fa-handshake-angle"></i>
+            <span>ক্যাশ কোম্পানি</span>
+        </button>
+    </div>
+
+    <div id="companyList">
+        <!-- কোম্পানিগুলোর নাম এখানে আসবে -->
+    </div>
+</div>
+
+<!-- কোম্পানি ডিটেইলস মডাল -->
+<div id="companyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div id="companyMemo" style="background:white; width:95%; max-width:450px; padding:25px; border-radius:20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); font-family: sans-serif;">
+        
+        <div style="text-align:center; margin-bottom:20px; border-bottom: 2px dashed #eee; padding-bottom: 15px;">
+            <h2 style="margin:0; color:#8e44ad; text-transform: uppercase;">কোম্পানি স্টেটমেন্ট</h2>
+            <p id="detName" style="margin:10px 0; font-size:1.3rem; font-weight:bold;"></p>
+            <div id="detPhone" style="color:#666;"></div>
+        </div>
+        
+        <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>মোট বকেয়া (দোকানের দায়):</span>
+                <b id="detDue" style="font-size:1.4rem; color:#e74c3c;"></b>
+            </div>
+            <div id="detAddress" style="font-size:0.9rem; color:#7f8c8d;"></div>
+        </div>
+
+        <div style="text-align:center; color:#95a5a6; font-size:0.8rem; margin-bottom:20px;">
+            <p>এই কোম্পানি থেকে মাল ক্রয় করার সময় অটোমেটিক বাকি যোগ হয়।</p>
+        </div>
+
+        <!-- বাটনসমূহ -->
+        <div class="no-print" style="display:flex; gap:10px;">
+            <button onclick="deleteCompany()" style="flex:1; padding:12px; background:#ff7675; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-trash"></i> ডিলিট</button>
+            <button onclick="window.print()" style="flex:1; padding:12px; background:#8e44ad; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-print"></i> প্রিন্ট</button>
+            <button onclick="closeModal()" style="flex:1; padding:12px; background:#dfe6e9; color:#2d3436; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">বন্ধ</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body * { visibility: hidden; }
+        #companyMemo, #companyMemo * { visibility: visible; }
+        #companyMemo { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+        .no-print { display: none !important; }
+    }
+</style>
+
+<!-- কোম্পানি পারচেজ মেমো মডাল -->
+<div id="purchaseMemoModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; align-items:center; justify-content:center;">
+    <div id="memoPrintArea" style="background:white; width:95%; max-width:550px; padding:20px; border-radius:15px; font-family: 'Courier New', monospace;">
+        <div style="text-align:center; border-bottom:1px dashed #333; padding-bottom:10px;">
+            <h2 style="margin:0;">ক্রয় ভাউচার</h2>
+            <b id="pMemoCompanyName"></b><br>
+            <small id="pMemoDate"></small>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin-top:15px; font-size: 0.85rem;">
+            <thead>
+                <tr style="border-bottom:1px dashed #333;">
+                    <th style="text-align:left; padding:5px;">বারকোড</th>
+                    <th style="text-align:left;">নাম</th>
+                    <th style="text-align:center;">পরিমাণ</th>
+                    <th style="text-align:center;">কেনা</th>
+                    <th style="text-align:right;">বেচা</th>
+                </tr>
+            </thead>
+            <tbody id="pMemoBody"></tbody>
+        </table>
+
+        <div style="margin-top:15px; border-top:1px dashed #333; padding-top:10px; text-align:right;">
+            <b>মোট বিল: ৳ <span id="pMemoTotal"></span></b><br>
+            <small id="pMemoStatus" style="font-weight:bold;"></small>
+        </div>
+
+        <!-- ৪টি আইকন বাটন -->
+        <div class="no-print" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-top:25px;">
+            <button class="icon-btn bg-print" onclick="window.print()" style="background:#3498db; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-print"></i><br>প্রিন্ট</button>
+            <button class="icon-btn bg-pay" onclick="payToCompany()" style="background:#27ae60; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-money-bill-wave"></i><br>পরিশোধ</button>
+            <button class="icon-btn bg-back" onclick="closePurchaseMemo()" style="background:#95a5a6; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i><br>ব্যাক</button>
+            <button class="icon-btn bg-delete" onclick="deletePurchaseMemo()" style="background:#e74c3c; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-trash"></i><br>ডিলিট</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/company.js"></script>
+</body>
+</html>

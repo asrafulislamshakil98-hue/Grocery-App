@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লগইন - মুদি দোকান</title>
+    <style>
+        body { font-family: sans-serif; background: #2c3e50; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 20px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: #2c3e50; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        p { text-align: center; font-size: 0.9rem; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>দোকান লগইন</h2>
+        <form id="loginForm">
+            <input type="text" id="user" placeholder="ইউজার নেম" required>
+            <input type="password" id="pass" placeholder="পাসওয়ার্ড" required>
+            <button type="submit">প্রবেশ করুন</button>
+        </form>
+        <p>নতুন দোকান? <a href="register.html" style="color:#27ae60; font-weight:bold; text-decoration:none;">অ্যাকাউন্ট খুলুন</a></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('user').value,
+                    password: document.getElementById('pass').value
+                })
+            });
+            const result = await res.json();
+            if (res.ok) window.location.href = 'index.html';
+            else alert(result.msg);
+        });
+    </script>
+</body>
+</html>

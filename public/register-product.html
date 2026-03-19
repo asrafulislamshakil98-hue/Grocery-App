@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পণ্য রেজিস্ট্রেশন - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- বারকোড স্ক্যানার লাইব্রেরি -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #e67e22; margin-top: 0; }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        
+        /* বারকোড বক্স ও ক্যামেরা আইকন ডিজাইন */
+        .barcode-input-wrapper { display: flex; gap: 10px; align-items: center; }
+        .scan-icon { font-size: 1.4rem; color: #e67e22; cursor: pointer; padding: 10px; background: #fff4e6; border-radius: 8px; border: 1px solid #f39c12; }
+
+        button#saveBtn { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        button#saveBtn:hover { background: #d35400; }
+        
+        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #7f8c8d; font-size: 0.9rem; }
+
+        /* ক্যামেরা স্ক্যানার মডাল স্টাইল */
+        #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+        #reader { width: 300px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .close-scanner { color: white; margin-top: 20px; cursor: pointer; padding: 10px 25px; border: 1px solid white; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2><i class="fa-solid fa-cart-plus"></i> নতুন পণ্য এন্ট্রি</h2>
+    <form id="prodRegForm">
+        
+        <div class="form-group">
+            <label>বারকোড (স্ক্যান করুন)</label>
+            <div class="barcode-input-wrapper">
+                <input type="text" id="barcode" placeholder="বারকোড নম্বর (যদি থাকে)" autofocus>
+                <i class="fa-solid fa-camera scan-icon" onclick="openScanner()" title="ক্যামেরা দিয়ে স্ক্যান করুন"></i>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>পণ্যের নাম</label>
+            <input type="text" id="name" placeholder="পণ্যের নাম লিখুন" required>
+        </div>
+
+        <div class="form-group">
+            <label>কোম্পানি / সাপ্লায়ার</label>
+            <select id="companySelect" required>
+                <option value="">কোম্পানি বেছে নিন</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>কেনা দাম</label>
+                <input type="number" id="purchasePrice" placeholder="0.00" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>বেচা দাম</label>
+                <input type="number" id="price" placeholder="0.00" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>স্টক পরিমাণ</label>
+            <input type="number" id="stock" placeholder="সংখ্যা / কেজি" required>
+        </div>
+
+        <div class="form-group">
+            <label>পেমেন্ট মোড (কোম্পানিকে)</label>
+            <select id="paymentType">
+                <option value="cash">নগদ (Cash)</option>
+                <option value="credit">বাকি (Credit)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>পণ্যের ছবি (Photo)</label>
+            <input type="file" id="productImage" accept="image/*">
+        </div>
+
+        <button type="submit" id="saveBtn">পণ্য সেভ করুন</button>
+    </form>
+    <a href="registration.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> পিছনে যান</a>
+</div>
+
+<!-- ক্যামেরা স্ক্যানার মডাল -->
+<div id="scanner-modal">
+    <div id="reader"></div>
+    <div class="close-scanner" onclick="closeScanner()">বন্ধ করুন</div>
+</div>
+
+<script src="js/register-product.js"></script>
+</body>
+</html>

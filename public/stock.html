@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>স্টক রিপোর্ট - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        header { background: #2c3e50; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        
+        .container { padding: 15px; max-width: 1000px; margin: auto; }
+        
+        /* সার্চ বার */
+        .search-box { margin-bottom: 20px; display: flex; gap: 10px; }
+        .search-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+
+        /* টেবিল স্টাইল */
+        .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; font-weight: 500; font-size: 0.9rem; }
+        
+        .product-img { width: 45px; height: 45px; border-radius: 5px; object-fit: cover; background: #eee; }
+        .stock-badge { padding: 4px 8px; border-radius: 5px; font-weight: bold; font-size: 0.85rem; }
+        .low-stock { background: #ffeaa7; color: #d35400; }
+        .out-of-stock { background: #ff7675; color: white; }
+        .good-stock { background: #55efc4; color: #00b894; }
+
+        .price-tag { color: #2ecc71; font-weight: bold; }
+        .buy-price { color: #95a5a6; font-size: 0.8rem; }
+
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: #34495e; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><i class="fa-solid fa-boxes-stacked"></i> দোকানের বর্তমান স্টক</h1>
+</header>
+
+<div class="container">
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ড্যাশবোর্ডে ফিরে যান</a>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="পণ্যের নাম লিখে খুঁজুন..." onkeyup="filterProducts()">
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ছবি</th>
+                    <th>পণ্যের নাম</th>
+                    <th>কেনা/বেচা</th>
+                    <th>স্টক</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody">
+                <!-- ডাটা এখানে আসবে -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- এডিট করার জন্য পপআপ (Modal) -->
+    <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:20px; border-radius:15px; width:90%; max-width:400px;">
+            <h3>পণ্য সংশোধন করুন</h3>
+            <input type="hidden" id="editId">
+            <label>পণ্যের নাম</label>
+            <input type="text" id="editName" style="width:100%; padding:10px; margin-bottom:10px;">
+            <label>কেনা দাম</label>
+            <input type="number" id="editPurchase" style="width:100%; padding:10px; margin-bottom:10px;">
+            <label>বেচা দাম</label>
+            <input type="number" id="editPrice" style="width:100%; padding:10px; margin-bottom:10px;">
+            <label>স্টক পরিমাণ</label>
+            <input type="number" id="editStock" style="width:100%; padding:10px; margin-bottom:10px;">
+        
+            <div style="display:flex; gap:10px; margin-top:10px;">
+               <button onclick="saveEdit()" style="flex:1; padding:12px; background:#27ae60; color:white; border:none; border-radius:8px;">সেভ করুন</button>
+               <button onclick="closeModal()" style="flex:1; padding:12px; background:#bdc3c7; color:white; border:none; border-radius:8px;">বন্ধ করুন</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/stock.js"></script>
+</body>
+</html>

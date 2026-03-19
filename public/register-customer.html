@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কাস্টমার রেজিস্ট্রেশন</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
+        .container { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #1abc9c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fa-solid fa-user-tag"></i> কাস্টমার যোগ করুন</h2>
+        <form id="regForm">
+            <input type="text" id="custName" placeholder="কাস্টমারের নাম" required>
+            <input type="text" id="custPhone" placeholder="মোবাইল নম্বর" required>
+            <input type="text" id="custAddress" placeholder="ঠিকানা (ঐচ্ছিক)">
+            <button type="submit">রেজিস্ট্রেশন করুন</button>
+        </form>
+        <br><a href="index.html" style="text-decoration:none; color:#7f8c8d; display:block; text-align:center;">পিছনে যান</a>
+    </div>
+
+    <script>
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('custName').value,
+                phone: document.getElementById('custPhone').value,
+                address: document.getElementById('custAddress').value
+            };
+            const res = await fetch('/api/customers/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            alert(result.msg);
+            if(res.ok) location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাকির খাতা - বিস্তারিত</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #fef9f9; margin: 0; padding: 15px; }
+        .header { background: #d63031; color: white; padding: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* কাস্টমার কার্ড */
+        .customer-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; border-left: 5px solid #d63031; }
+        .customer-card h3 { margin: 0; font-size: 1.1rem; }
+        .total-due { color: #d63031; font-weight: bold; font-size: 1.2rem; }
+
+        /* পপআপ মডাল */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
+        .modal-content { background:white; width:95%; max-width:500px; padding:20px; border-radius:15px; max-height: 80vh; overflow-y: auto; }
+        
+        /* ৫ কলাম মেমো টেবিল */
+        .memo-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-family: monospace; }
+        .memo-table th { border-bottom: 1px dashed #333; padding: 8px 2px; font-size: 0.75rem; text-align: left; }
+        .memo-table td { padding: 8px 2px; font-size: 0.85rem; border-bottom: 1px solid #f9f9f9; }
+
+        .footer-icons { display: flex; gap: 10px; margin-top: 20px; }
+        .icon-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .bg-print { background: #3498db; }
+        .bg-pay { background: #27ae60; transition: 0.3s; }
+        .bg-pay:hover { background: #219150; transform: scale(1.05); }
+        .bg-back { background: #95a5a6; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="index.html" style="color:white;"><i class="fa-solid fa-arrow-left"></i></a>
+    <h2 style="margin:0;">বাকির খাতা (বিস্তারিত)</h2>
+    <div></div>
+</div>
+
+<!-- কাস্টমার লিস্ট -->
+<div id="customerListContainer"></div>
+
+<!-- কাস্টমার হিস্ট্রি মডাল (তারিখ অনুযায়ী কেনাকাটা) -->
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <h3 id="histName">কাস্টমারের নাম</h3>
+        <div id="historyList"></div>
+        <button onclick="closeModal('historyModal')" style="width:100%; margin-top:15px; padding:10px;">বন্ধ করুন</button>
+    </div>
+</div>
+
+<!-- ডিজিটাল মেমো মডাল (৫ কলাম) -->
+<div id="memoModal" class="modal">
+    <div class="modal-content" id="printableMemo">
+        <div style="text-align:center;">
+            <h2 style="margin:0;">ক্যাশ মেমো</h2>
+            <p id="memoCustInfo" style="margin:5px 0; font-weight:bold;"></p>
+            <small id="memoDate"></small>
+        </div>
+
+        <table class="memo-table">
+            <thead>
+                <tr>
+                    <th style="width:20%">বারকোড</th>
+                    <th style="width:35%">নাম</th>
+                    <th style="width:15%">পরিমাণ</th>
+                    <th style="width:10%">ছাড়</th>
+                    <th style="width:20%; text-align:right;">মোট</th>
+                </tr>
+            </thead>
+            <tbody id="memoBody"></tbody>
+        </table>
+
+        <div style="margin-top:15px; border-top: 1px dashed #333; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between;"><span>মোট বিল:</span> <b id="memoTotal"></b></div>
+            <div style="display:flex; justify-content:space-between; color:red;"><span>বাকি আছে:</span> <b id="memoDue"></b></div>
+        </div>
+
+        <div class="footer-icons">
+            <button class="icon-btn bg-print" onclick="window.print()"><i class="fa-solid fa-print"></i><span>প্রিন্ট</span></button>
+            <button class="icon-btn bg-pay" onclick="collectPayment()"><i class="fa-solid fa-money-bill-transfer"></i><span>টাকা জমা</span></button>
+            <button class="icon-btn bg-back" onclick="closeModal('memoModal')"><i class="fa-solid fa-circle-xmark"></i><span>পিছনে</span></button>
+        </div>
+    </div>
+</div>
+
+<script src="js/credits.js"></script>
+</body>
+</html>

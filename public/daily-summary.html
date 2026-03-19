@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আজকের রিপোর্ট - মুদি দোকান</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        header { background: #3498db; color: white; padding: 20px; text-align: center; font-size: 1.2rem; }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px 10px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            border-bottom: 5px solid #ccc;
+        }
+
+        .stat-card i { font-size: 2.2rem; margin-bottom: 10px; }
+        .stat-card span { font-size: 0.9rem; color: #7f8c8d; font-weight: 500; }
+        .stat-card b { font-size: 1.3rem; margin-top: 5px; color: #2c3e50; }
+
+        /* কার্ড কালার */
+        .c-sale { color: #27ae60; border-color: #27ae60; }
+        .c-cash { color: #2980b9; border-color: #2980b9; }
+        .c-due { color: #e74c3c; border-color: #e74c3c; }
+        .c-profit { color: #8e44ad; border-color: #8e44ad; }
+
+        .back-btn {
+            display: block;
+            margin-top: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <i class="fa-solid fa-calendar-day"></i> আজকের হিসাবের সারসংক্ষেপ
+</header>
+
+<div class="container">
+    <div class="stats-grid">
+        <!-- আজকের বিক্রি -->
+        <div class="stat-card c-sale">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>আজকের বিক্রি</span>
+            <b id="totalSales">৳ ০</b>
+        </div>
+
+        <!-- নগদ জমা -->
+        <div class="stat-card c-cash">
+            <i class="fa-solid fa-money-bill-1-wave"></i>
+            <span>নগদ জমা</span>
+            <b id="totalCash">৳ ০</b>
+        </div>
+
+        <!-- আজকের বাকি -->
+        <div class="stat-card c-due">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>আজকের বাকি</span>
+            <b id="totalDue">৳ ০</b>
+        </div>
+
+        <!-- আজকের লাভ -->
+        <div class="stat-card c-profit">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <span>আজকের লাভ</span>
+            <b id="totalProfit">৳ ০</b>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ড্যাশবোর্ডে ফিরে যান</a>
+</div>
+
+<script src="js/daily-stats.js"></script>
+</body>
+</html>
