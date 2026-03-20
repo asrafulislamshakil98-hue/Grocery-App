@@ -117,4 +117,34 @@ router.put('/change-password', async (req, res) => {
     } catch (err) { res.status(500).json(err); }
 });
 
+// সুপার অ্যাডমিন (আপনি) এর জন্য পাসওয়ার্ড রিসেট রাউট
+router.put('/super-admin/reset-user-password', async (req, res) => {
+    try {
+        const { targetUsername, newPassword, masterSecret } = req.body;
+
+        // এটি আপনার গোপন কোড, এটি কাউকে বলবেন না (পরিবর্তন করে নিন)
+        const MY_MASTER_KEY = "shakil@khan"; 
+
+        // ১. মাস্টার কি চেক করা
+        if (masterSecret !== MY_MASTER_KEY) {
+            return res.status(403).json({ msg: "অ্যাক্সেস ডিনাইড! ভুল মাস্টার কি।" });
+        }
+
+        // ২. ইউজারকে খুঁজে বের করা
+        const user = await User.findOne({ username: targetUsername });
+        if (!user) {
+            return res.status(404).json({ msg: "এই ইউজার নেমটি পাওয়া যায়নি!" });
+        }
+
+        // ৩. নতুন পাসওয়ার্ড এনক্রিপ্ট করা এবং সেভ করা
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ msg: `ইউজার '${targetUsername}' এর পাসওয়ার্ড সফলভাবে রিসেট হয়েছে!` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
