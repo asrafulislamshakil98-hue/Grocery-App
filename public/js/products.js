@@ -74,17 +74,18 @@ function renderTable() {
         total += subTotal;
         body.innerHTML += `
             <tr>
-                <td>${item.barcode}</td>
-                <td><b>${item.name}</b></td>
-                <td><input type="number" class="table-input" value="${item.purchasePrice}" onchange="updateItem(${index}, 'purchasePrice', this.value)"></td>
-                <td><input type="number" class="table-input" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)"></td>
-                <td><input type="number" class="table-input" value="${item.quantity}" onchange="updateItem(${index}, 'quantity', this.value)"></td>
+                <td>
+                    <b>${item.name}</b><br>
+                    <small style="color:#888; font-size:0.7rem;">${item.barcode}</small>
+                </td>
+                <td style="text-align:center;"><input type="number" class="table-input" value="${item.purchasePrice}" onchange="updateItem(${index}, 'purchasePrice', this.value)"></td>
+                <td style="text-align:center;"><input type="number" class="table-input" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)"></td>
+                <td style="text-align:center;"><input type="number" class="table-input" value="${item.quantity}" onchange="updateItem(${index}, 'quantity', this.value)"></td>
             </tr>
         `;
     });
     grandTotal.innerText = `৳ ${total}`;
 }
-
 function updateItem(index, field, value) {
     purchaseCart[index][field] = parseFloat(value);
     renderTable();
