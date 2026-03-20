@@ -88,4 +88,33 @@ router.put('/update-profile', upload.single('logo'), async (req, res) => {
     }
 });
 
+// ইউজার নেম পরিবর্তন
+router.put('/update-username', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const existing = await User.findOne({ username });
+        if (existing) return res.status(400).json({ msg: "ইউজার নেমটি খালি নেই" });
+
+        await User.findByIdAndUpdate(req.session.userId, { username });
+        res.json({ msg: "ইউজার নেম আপডেট সফল" });
+    } catch (err) { res.status(500).json(err); }
+});
+
+// পাসওয়ার্ড পরিবর্তন
+router.put('/change-password', async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const user = await User.findById(req.session.userId);
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) return res.status(400).json({ msg: "পুরানো পাসওয়ার্ড ভুল!" });
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ msg: "পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!" });
+    } catch (err) { res.status(500).json(err); }
+});
+
 module.exports = router;

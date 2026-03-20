@@ -195,3 +195,62 @@ async function handleProfileUpdate(e) {
         saveBtn.disabled = false;
     }
 }
+
+// সেটিংস ওপেন/ক্লোজ
+function openSettingsMenu() {
+    document.getElementById('settingsModal').style.display = 'flex';
+    document.getElementById('logoutDropdown').style.display = 'none';
+}
+function closeSettingsMenu() {
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
+// ১. প্রাইভেসি পলিসি
+function showPrivacy() {
+    alert("প্রাইভেসি পলিসি:\n১. আপনার ডাটা সম্পূর্ণ নিরাপদ।\n২. আমরা কোনো তথ্য তৃতীয় পক্ষের কাছে শেয়ার করি না।\n৩. আপনার পাসওয়ার্ড এনক্রিপ্টেড অবস্থায় থাকে।");
+}
+
+// ২. ইউজার পরিবর্তন মডাল
+function openUserChange() {
+    document.getElementById('actionTitle').innerText = "নতুন ইউজার নেম দিন";
+    document.getElementById('actionFields').innerHTML = `<input type="text" id="newUsername" placeholder="নতুন নাম লিখুন" style="width:100%; padding:10px; box-sizing:border-box;">`;
+    document.getElementById('actionModal').style.display = 'flex';
+    
+    document.getElementById('actionSaveBtn').onclick = async () => {
+        const newName = document.getElementById('newUsername').value;
+        const res = await fetch('/api/auth/update-username', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: newName })
+        });
+        if(res.ok) { alert("ইউজার নেম আপডেট হয়েছে!"); location.reload(); }
+        else alert("নামটি অন্য কেউ ব্যবহার করছে!");
+    };
+}
+
+// ৩. পাসওয়ার্ড পরিবর্তন মডাল
+function openPassChange() {
+    document.getElementById('actionTitle').innerText = "পাসওয়ার্ড পরিবর্তন";
+    document.getElementById('actionFields').innerHTML = `
+        <input type="password" id="oldPass" placeholder="পুরানো পাসওয়ার্ড" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
+        <input type="password" id="newPass" placeholder="নতুন পাসওয়ার্ড" style="width:100%; padding:10px; box-sizing:border-box;">
+    `;
+    document.getElementById('actionModal').style.display = 'flex';
+
+    document.getElementById('actionSaveBtn').onclick = async () => {
+        const data = { 
+            oldPassword: document.getElementById('oldPass').value, 
+            newPassword: document.getElementById('newPass').value 
+        };
+        const res = await fetch('/api/auth/change-password', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        alert(result.msg);
+        if(res.ok) location.reload();
+    };
+}
+
+function closeActionModal() { document.getElementById('actionModal').style.display = 'none'; }

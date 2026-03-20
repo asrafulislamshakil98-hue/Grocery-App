@@ -141,6 +141,39 @@
             <i id="userDefaultIcon" class="fa-solid fa-user"></i>
         </div>
 
+        <!-- ২. সেটিংস মেইন মডাল -->
+        <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:3500; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+            <div style="background:white; width:90%; max-width:350px; padding:25px; border-radius:20px; text-align:center;">
+                <h3 style="margin-top:0;">সেটিংস মেনু</h3>
+        
+                <button onclick="showPrivacy()" style="width:100%; padding:15px; margin-bottom:10px; background:#f8f9fa; border:1px solid #ddd; border-radius:10px; cursor:pointer; font-weight:bold;">
+                   <i class="fa-solid fa-shield-halved"></i> প্রাইভেসি পলিসি
+                </button>
+        
+                <button onclick="openUserChange()" style="width:100%; padding:15px; margin-bottom:10px; background:#f8f9fa; border:1px solid #ddd; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fa-solid fa-user-tag"></i> ইউজার পরিবর্তন
+                </button>
+        
+                <button onclick="openPassChange()" style="width:100%; padding:15px; margin-bottom:10px; background:#f8f9fa; border:1px solid #ddd; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fa-solid fa-lock"></i> পাসওয়ার্ড পরিবর্তন
+                </button>
+        
+                <button onclick="closeSettingsMenu()" style="width:100%; padding:10px; margin-top:10px; color:gray; border:none; background:none; cursor:pointer;">বন্ধ করুন</button>
+            </div>
+        </div>
+
+        <!-- ৩. ইউজার এবং পাসওয়ার্ড চেঞ্জ করার ছোট ফর্ম (লজিক মডাল) -->
+        <div id="actionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:4000; align-items:center; justify-content:center;">
+            <div style="background:white; width:90%; max-width:320px; padding:20px; border-radius:15px;">
+                <h4 id="actionTitle" style="margin-top:0;">টাইটেল</h4>
+                <div id="actionFields"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                   <button id="actionSaveBtn" style="flex:2; padding:10px; background:#27ae60; color:white; border:none; border-radius:5px;">সেভ করুন</button>
+                   <button onclick="closeActionModal()" style="flex:1; padding:10px; background:#bdc3c7; color:white; border:none; border-radius:5px;">বাদ দিন</button>
+                </div>
+            </div>
+        </div>
+
         <!-- ড্রপডাউন মেনু (আগের মতোই) -->
         <div id="logoutDropdown" style="display: none; position: absolute; right: 0; top: 48px; background: white; min-width: 180px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; overflow: hidden;">
             <div id="userNameDisplay" style="padding: 12px 15px; background: #f8f9fa; font-size: 0.85rem; border-bottom: 1px solid #eee; color: #7f8c8d; font-weight: bold;">
@@ -149,6 +182,11 @@
             <a href="#" onclick="openProfileModal()" style="display: block; padding: 12px 15px; color: #2c3e50; text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid #eee;">
                 <i class="fa-solid fa-user-pen"></i> প্রোফাইল এডিট
             </a>
+
+            <a href="#" onclick="openSettingsMenu()" style="display: block; padding: 12px 15px; color: #2c3e50; text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid #eee;">
+               <i class="fa-solid fa-gear"></i> সেটিংস (Settings)
+            </a>
+
             <a href="/api/auth/logout" style="display: block; padding: 12px 15px; color: #d63031; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
                 <i class="fa-solid fa-right-from-bracket"></i> লগআউট
             </a>
