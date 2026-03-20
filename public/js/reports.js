@@ -1,122 +1,118 @@
-let allSales = []; // সব সেল ডাটা এখানে থাকবে
-let currentMemoId = null;
+let allSales = [];
+let groupedSales = {};
+let currentSaleId = null;
 
-document.addEventListener('DOMContentLoaded', fetchReports);
-
-// ১. ডাটাবেজ থেকে রিপোর্ট নিয়ে আসা
-async function fetchReports() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+document.addEventListener('DOMContentLoaded', async () => {
+    const res = await fetch('/api/sales/report/all');
+    allSales = await res.json();
     
-    let url = '/api/sales/report/all';
-    if (startDate && endDate) {
-        url += `?startDate=${startDate}&endDate=${endDate}`;
-    }
-
-    try {
-        const response = await fetch(url);
-        allSales = await response.json();
-        renderReports(allSales);
-    } catch (err) {
-        console.error("রিপোর্ট লোড করতে সমস্যা:", err);
-    }
-}
-
-// ২. টেবিলে ডাটা সাজানো
-function renderReports(sales) {
-    const tableBody = document.getElementById('reportTableBody');
-    tableBody.innerHTML = '';
-
-    if (sales.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>';
-        return;
-    }
-
-    sales.forEach((sale, index) => {
+    // ১. তারিখ অনুযায়ী ডাটা গ্রুপ করা
+    allSales.forEach(sale => {
         const date = new Date(sale.date).toLocaleDateString('bn-BD');
-        
-        // আইটেমগুলোর নাম সংক্ষেপে দেখানো
-        const itemShort = sale.items.map(i => i.name).join(', ').substring(0, 25) + "...";
+        if (!groupedSales[date]) groupedSales[date] = [];
+        groupedSales[date].push(sale);
+    });
 
-        const row = document.createElement('tr');
-        row.style.cursor = "pointer";
-        // ইনডেক্স ব্যবহার করে মেমো ওপেন করা (যাতে এরর না হয়)
-        row.setAttribute('onclick', `openInvoice(${index})`);
+    renderDateList();
+});
 
-        row.innerHTML = `
-            <td>${date}</td>
-            <td><b>${sale.customerName}</b></td>
-            <td style="font-size: 0.8rem; color: #666;">${itemShort}</td>
-            <td>৳ ${sale.totalAmount}</td>
-            <td>৳ ${sale.paidAmount}</td>
-            <td><span class="badge ${sale.dueAmount > 0 ? 'bg-danger' : 'bg-success'}">৳ ${sale.dueAmount}</span></td>
-            <td style="font-weight:bold; color:green;">৳ ${sale.profit || 0}</td>
+// তারিখের বাটনগুলো তৈরি করা
+function renderDateList() {
+    const container = document.getElementById('dateListView');
+    container.innerHTML = '';
+    
+    Object.keys(groupedSales).forEach(date => {
+        const salesCount = groupedSales[date].length;
+        container.innerHTML += `
+            <div class="date-btn" onclick="showInvoicesForDate('${date}')">
+                <b>${date}</b>
+                <span>${salesCount} টি মেমো <i class="fa-solid fa-chevron-right"></i></span>
+            </div>
         `;
-        tableBody.appendChild(row);
     });
 }
 
-// ৩. ইনভয়েস/মেমো ওপেন করা
-function openInvoice(index) {
-    const sale = allSales[index]; 
+// নির্দিষ্ট তারিখের ইনভয়েস লিস্ট দেখানো
+function showInvoicesForDate(date) {
+    document.getElementById('dateListView').classList.add('hidden');
+    document.getElementById('invoiceListView').classList.remove('hidden');
+    document.getElementById('summaryBar').classList.remove('hidden');
+    document.getElementById('selectedDateTitle').innerText = date + " এর বিক্রয়সমূহ";
+
+    const container = document.getElementById('invoiceContainer');
+    container.innerHTML = '';
+
+    let totalDaySales = 0;
+    let totalDayProfit = 0;
+    let totalDayQty = 0;
+
+    groupedSales[date].forEach(sale => {
+        totalDaySales += sale.totalAmount;
+        totalDayProfit += (sale.profit || 0);
+        
+        // মোট কয়টা আইটেম বিক্রি হলো
+        const qtyCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+        totalDayQty += qtyCount;
+
+        container.innerHTML += `
+            <div class="invoice-item" onclick="openMemo('${sale._id}')">
+                <div>
+                    <b>${sale.customerName}</b><br>
+                    <small>${new Date(sale.date).toLocaleTimeString('bn-BD')}</small>
+                </div>
+                <div style="text-align:right;">
+                    <b>৳ ${sale.totalAmount}</b><br>
+                    <small style="color:${sale.dueAmount > 0 ? 'red' : 'green'}">বাকি: ${sale.dueAmount}</small>
+                </div>
+            </div>
+        `;
+    });
+
+    // সামারি আপডেট করা
+    document.getElementById('sTotal').innerText = "৳" + totalDaySales;
+    document.getElementById('sProfit').innerText = "৳" + totalDayProfit;
+    document.getElementById('sQty').innerText = totalDayQty + " টি";
+}
+
+// ইনভয়েস মডাল ওপেন (মোবাইল ফিক্সড)
+function openMemo(saleId) {
+    const sale = allSales.find(s => s._id === saleId);
     if (!sale) return;
 
-    currentMemoId = sale._id;
-    
-    // কাস্টমার এবং তারিখ সেট করা
-    document.getElementById('invCustomer').innerText = sale.customerName;
-    document.getElementById('invDate').innerText = "রশিদ নং: " + sale._id.substring(18) + " | " + new Date(sale.date).toLocaleString('bn-BD');
-    
-    // মোট হিসাব সেট করা
-    document.getElementById('invTotal').innerText = "৳ " + sale.totalAmount;
-    document.getElementById('invPaid').innerText = "৳ " + sale.paidAmount;
-    document.getElementById('invDue').innerText = "৳ " + sale.dueAmount;
+    currentSaleId = saleId;
+    document.getElementById('mCustName').innerText = sale.customerName;
+    document.getElementById('mDate').innerText = new Date(sale.date).toLocaleString('bn-BD');
+    document.getElementById('mTotal').innerText = "৳" + sale.totalAmount;
+    document.getElementById('mPaid').innerText = "৳" + sale.paidAmount;
+    document.getElementById('mDue').innerText = "৳" + sale.dueAmount;
 
-    // আইটেম টেবিল ক্লিয়ার করে নতুন করে যোগ করা
-    const itemsContainer = document.getElementById('invItems');
-    itemsContainer.innerHTML = '';
-    
+    const itemBody = document.getElementById('mItems');
+    itemBody.innerHTML = '';
     sale.items.forEach(item => {
-        // এই লাইনের মোট দাম (দর × পরিমাণ)
-        const rowTotal = item.price * item.quantity;
-
-        itemsContainer.innerHTML += `
-            <tr style="border-bottom: 1px solid #f9f9f9;">
-                <td style="padding:10px 2px; font-size:0.7rem; color:#555;">${item.barcode || '---'}</td>
-                <td style="padding:10px 2px; word-break: break-word;"><b>${item.name}</b></td>
-                <!-- ৩ নম্বর কলাম: পরিমাণ (মাঝখানে) -->
-                <td style="text-align:center; padding:10px 2px;">${item.quantity}</td>
-                <!-- ৪ নম্বর কলাম: মোট দাম (সবার ডানে) -->
-                <td style="text-align:right; padding:10px 2px; font-weight:bold;">৳ ${rowTotal}</td>
+        itemBody.innerHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td style="text-align:center;">${item.quantity}</td>
+                <td style="text-align:right;">৳${item.price * item.quantity}</td>
             </tr>
         `;
     });
 
-    // মডালটি দেখানো
     document.getElementById('invoiceModal').style.display = 'flex';
 }
 
-// ৪. মডাল বন্ধ করা
-function closeInvoice() {
-    document.getElementById('invoiceModal').style.display = 'none';
-}
-
-// ৫. মেমো ডিলিট করা
+// মেমো ডিলিট ফাংশন (আগের এপিআই অনুযায়ী)
 async function deleteMemo() {
-    if (confirm("আপনি কি নিশ্চিতভাবে এই মেমোটি ডিলিট করতে চান? এতে মাল স্টকে ফেরত যাবে।")) {
-        try {
-            const res = await fetch(`/api/sales/delete/${currentMemoId}`, {
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                alert("মেমো ডিলিট সফল হয়েছে!");
-                closeInvoice();
-                fetchReports(); // আবার লিস্ট লোড করা
-            } else {
-                alert("ডিলিট করা যায়নি!");
-            }
-        } catch (err) {
-            alert("সার্ভার এরর!");
-        }
+    if (confirm("এই মেমো ডিলিট করলে স্টক ফেরত যাবে। নিশ্চিত?")) {
+        const res = await fetch(`/api/sales/delete/${currentSaleId}`, { method: 'DELETE' });
+        if (res.ok) { alert("ডিলিট সফল!"); location.reload(); }
     }
 }
+
+function backToDates() {
+    document.getElementById('dateListView').classList.remove('hidden');
+    document.getElementById('invoiceListView').classList.add('hidden');
+    document.getElementById('summaryBar').classList.add('hidden');
+}
+
+function closeModal() { document.getElementById('invoiceModal').style.display = 'none'; }
