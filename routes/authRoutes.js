@@ -122,9 +122,7 @@ router.put('/super-admin/reset-user-password', async (req, res) => {
     try {
         const { targetUsername, newPassword, masterSecret } = req.body;
 
-        // এটি আপনার গোপন কোড, এটি কাউকে বলবেন না (পরিবর্তন করে নিন)
-        const MY_MASTER_KEY = "shakil@khan"; 
-
+        const MY_MASTER_KEY = process.env.MASTER_KEY; 
         // ১. মাস্টার কি চেক করা
         if (masterSecret !== MY_MASTER_KEY) {
             return res.status(403).json({ msg: "অ্যাক্সেস ডিনাইড! ভুল মাস্টার কি।" });

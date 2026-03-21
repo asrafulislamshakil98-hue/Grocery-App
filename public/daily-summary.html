@@ -85,6 +85,28 @@
             <span>আজকের লাভ</span>
             <b id="totalProfit">৳ ০</b>
         </div>
+
+        <!-- daily-summary.html এর stats-grid এর ভেতরে ৪টি কার্ডের শেষে এটি বসান -->
+
+        <div class="stat-card" style="color: #e67e22; border-color: #e67e22;">
+            <i class="fa-solid fa-wallet"></i>
+            <span>আজকের খরচ</span>
+            <b id="totalExpense">৳ ০</b>
+        </div>
+
+        <!-- গ্রিড লেআউটটি ৫টি কার্ডের জন্য ঠিক করতে নিচের স্টাইলটি দেখে নিন -->
+        <style>
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr); /* ফোনে ২ কলাম */
+                gap: 15px;
+            }
+            @media (min-width: 768px) {
+                .stats-grid {
+                   grid-template-columns: repeat(3, 1fr); /* ল্যাপটপে ৩ কলাম */
+                }
+            }
+        </style>
     </div>
 
     <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ড্যাশবোর্ডে ফিরে যান</a>
