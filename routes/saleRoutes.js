@@ -7,11 +7,12 @@ const Expense = require('../models/Expense');
 
 
 // ১. নতুন বিক্রয় যোগ করা (আগের কোডটি এখানেও আছে)
+// routes/saleRoutes.js - নতুন আপডেট
 router.post('/add', async (req, res) => {
     try {
-        if (!req.session.userId) return res.status(401).json({ msg: "আবার লগইন করুন!" });
+        if (!req.session.userId) return res.status(401).json({ msg: "লগইন করুন" });
 
-        const { customerName, items, paidAmount } = req.body;
+        const { customerName, items, paidAmount, customerId } = req.body; // কাস্টমার আইডি লাগবে
         const currentUserId = req.session.userId;
 
         let totalAmount = 0;
@@ -27,19 +28,30 @@ router.post('/add', async (req, res) => {
             }
         }
 
+        const dueAmount = totalAmount - Number(paidAmount);
+
         const newSale = new Sale({
             userId: currentUserId,
             customerName: customerName || "Cash Customer",
             items: items,
             totalAmount: totalAmount,
             paidAmount: Number(paidAmount),
-            dueAmount: totalAmount - Number(paidAmount),
+            dueAmount: dueAmount,
             totalCost: totalCost,
             profit: totalAmount - totalCost,
             date: new Date()
         });
 
         await newSale.save();
+
+        // --- নতুন কোড: কাস্টমারের বকেয়া আপডেট করা ---
+        if (customerId && dueAmount > 0) {
+            const Customer = require('../models/Customer');
+            await Customer.findByIdAndUpdate(customerId, {
+                $inc: { totalDue: dueAmount } // আগের বাকির সাথে নতুন বাকি যোগ হবে
+            });
+        }
+
         res.status(201).json({ msg: "বিক্রি সফল হয়েছে!" });
     } catch (err) {
         res.status(500).json({ error: err.message });

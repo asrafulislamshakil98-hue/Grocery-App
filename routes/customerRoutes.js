@@ -42,4 +42,15 @@ router.get('/all', async (req, res) => {
     }
 });
 
+// নির্দিষ্ট কাস্টমারের তথ্য দেখা
+router.get('/:id', async (req, res) => {
+    try {
+        const customer = await Customer.findOne({ _id: req.params.id, userId: req.session.userId });
+        if (!customer) return res.status(404).json({ msg: "কাস্টমার পাওয়া যায়নি" });
+        res.json(customer);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
 module.exports = router;

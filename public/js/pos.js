@@ -18,6 +18,35 @@ async function init() {
 }
 init();
 
+// কাস্টমার সিলেক্ট করলে আগের বাকি লোড করার লজিক
+// এটি আপনার js/pos.js এর ভেতর নিশ্চিত করুন
+const customerSelectEl = document.getElementById('customerSelect');
+
+if (customerSelectEl) {
+    customerSelectEl.addEventListener('change', async function() {
+        const id = this.value;
+        const dueBox = document.getElementById('prevDueBox');
+        const dueAmountDisplay = document.getElementById('prevDueAmount');
+
+        if (id) {
+            console.log("Fetching due for customer:", id);
+            try {
+                // রেন্ডারে কাজ করার জন্য রিলেটিভ পাথ ব্যবহার করুন
+                const res = await fetch('/api/customers/' + id);
+                if (!res.ok) throw new Error("Customer not found");
+                
+                const customer = await res.json();
+                dueAmountDisplay.innerText = `৳ ${customer.totalDue || 0}`;
+                dueBox.style.display = 'block';
+            } catch (err) {
+                console.error("Fetch error on Render:", err);
+                dueBox.style.display = 'none';
+            }
+        } else {
+            dueBox.style.display = 'none';
+        }
+    });
+}
 // --- ক্যামেরা স্ক্যানার লজিক ---
 function openScanner() {
     document.getElementById('scanner-modal').style.display = 'flex';
@@ -188,42 +217,48 @@ function closeCheckout() {
 
 // ৩. ফাইনাল সেভ করা
 async function submitFinalSale() {
+    // ১. ইনপুট থেকে ডাটা সংগ্রহ করা
     let paid = parseFloat(document.getElementById('modalPaidInput').value) || 0;
     const discount = parseFloat(document.getElementById('discountInput').value) || 0;
 
-    // ১. কাস্টমারের নাম ঠিক করা (ক্যাশ না কি ক্রেডিট)
     let customerName = "Cash Customer";
+    let customerId = null;
+
+    // ২. কাস্টমার ইনফো এবং আইডি চেক করা
     if (currentMode === 'credit') {
         const cSelect = document.getElementById('customerSelect');
         if (!cSelect.value) {
             alert("বাকি বিক্রির জন্য কাস্টমার সিলেক্ট করুন!");
             return;
         }
+        customerId = cSelect.value; // ডাটাবেজে কাস্টমার একাউন্ট আপডেটের জন্য আইডি নেওয়া হলো
         customerName = cSelect.options[cSelect.selectedIndex].text;
     }
 
-    // ২. খুচরা ফেরত লজিক (যাতে আজকের বাকি মাইনাস না হয়)
-    // যদি কাস্টমার বিলের চেয়ে বেশি টাকা দেয় (যেমন: ৩৬০ টাকার বিলে ৪০০ টাকা), 
-    // তবে আমরা ডাটাবেজে জমা হিসেবে শুধু ৩৬০ টাকাই পাঠাবো।
+    // ৩. খুচরা ফেরত লজিক (যাতে আজকের বাকি মাইনাস না হয়)
+    // ক্যাশ মোডে কাস্টমার বেশি টাকা দিলেও ডাটাবেজে শুধু বিলের সমপরিমাণ জমা দেখাবে
     let actualPaidInDb = paid;
     if (currentMode === 'cash' && paid > finalNetBill) {
-        actualPaidInDb = finalNetBill; // বিলের অতিরিক্ত টাকা জমার খাতায় যাবে না
+        actualPaidInDb = finalNetBill;
     }
 
+    // ৪. ফাইনাল ডাটা অবজেক্ট তৈরি
     const finalData = {
+        customerId: customerId, // কাস্টমার আইডি পাঠানো হচ্ছে
         customerName: customerName,
         items: cart,
         totalAmount: finalNetBill,
-        paidAmount: actualPaidInDb, // সংশোধিত জমা টাকা
+        paidAmount: actualPaidInDb,
         discount: discount
     };
 
-    // ৩. বাটন কন্ট্রোল (যাতে বারবার ক্লিক না হয়)
+    // ৫. বাটন কন্ট্রোল (যাতে ইউজার বারবার ক্লিক করতে না পারে)
     const btn = document.getElementById('finalBtn');
+    const originalText = btn.innerText;
     btn.disabled = true;
     btn.innerText = "কাজ চলছে...";
 
-    // ৪. সার্ভারে ডাটা পাঠানো
+    // ৬. সার্ভারে ডাটা পাঠানো
     try {
         const res = await fetch('/api/sales/add', {
             method: 'POST',
@@ -231,19 +266,21 @@ async function submitFinalSale() {
             body: JSON.stringify(finalData)
         });
 
+        const result = await res.json();
+
         if (res.ok) {
             alert("বিক্রি সফল হয়েছে!");
-            location.reload(); // পেজ রিফ্রেশ করে নতুন বিক্রির জন্য রেডি
+            location.reload(); // পেজ রিফ্রেশ
         } else {
-            const errorData = await res.json();
-            alert("ভুল হয়েছে: " + (errorData.msg || "চেকআউট ব্যর্থ!"));
+            // সার্ভার থেকে আসা ভুল মেসেজ দেখানো
+            alert("ভুল হয়েছে: " + (result.msg || "বিক্রি সম্পন্ন করা যায়নি।"));
             btn.disabled = false;
-            btn.innerText = "বিক্রি সম্পন্ন";
+            btn.innerText = originalText;
         }
     } catch (error) {
         console.error("Error:", error);
-        alert("সার্ভার এরর! ইন্টারনেট বা নোড জেএস চেক করুন।");
+        alert("সার্ভারে সমস্যা হচ্ছে! ইন্টারনেট বা নোড জেএস টার্মিনাল চেক করুন।");
         btn.disabled = false;
-        btn.innerText = "বিক্রি সম্পন্ন";
+        btn.innerText = originalText;
     }
 }

@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>POS - আধুনিক বিক্রয় কেন্দ্র</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.0.5">
     <!-- বারকোড স্ক্যানার লাইব্রেরি -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
@@ -87,11 +90,18 @@
     </div>
 
     <!-- কাস্টমার সেকশন (বাকি হলে আসবে) -->
-    <div id="customerBox" style="display: none; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e67e22;">
-        <select id="customerSelect" style="width: 100%; padding: 10px; border-radius: 5px;"></select>
-        <input type="number" id="paidAmount" placeholder="জমা টাকা (যদি দেয়)" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
-    </div>
+    <div id="customerBox" style="display: none; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #e67e22; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">কাস্টমার সিলেক্ট করুন</label>
+        <select id="customerSelect" style="width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #ddd;"></select>
 
+        <!-- বকেয়া বক্সটি এখানে (ভেতরে) বসানো হলো -->
+        <div id="prevDueBox" style="display:none; background:#fff5f5; padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid #feb2b2; color:#c53030; font-size:0.95rem;">
+            <i class="fa-solid fa-circle-info"></i> আগের মোট বাকি: <b id="prevDueAmount">৳ ০</b>
+        </div>
+
+        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">জমা টাকা (যদি দেয়)</label>
+        <input type="number" id="paidAmount" placeholder="০.০০" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+    </div>
     <!-- ইনভয়েস টেবিল -->
     <div class="invoice-card">
         <table>
@@ -161,6 +171,6 @@
     </div>
 </div>
 
-<script src="js/pos.js"></script>
+<script src="js/pos.js?v=1.0.5"></script>
 </body>
 </html>
