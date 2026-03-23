@@ -7,11 +7,18 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>বিক্রয় রিপোর্ট - মুদি দোকান</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.0.2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.0.4">
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; padding-bottom: 80px; }
         header { background: #2c3e50; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; }
         .container { padding: 15px; max-width: 800px; margin: auto; }
+
+        /* তারিখ ফিল্টার সেকশন */
+        .filter-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .filter-grid label { font-size: 0.8rem; color: #666; display: block; margin-bottom: 5px; }
+        .filter-grid input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; }
+        .btn-filter { width: 100%; margin-top: 10px; padding: 12px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         /* তারিখ বাটনের স্টাইল */
         .date-btn { 
@@ -35,14 +42,14 @@
         }
         #memoContent { 
             background:white; width:95%; max-width:400px; padding:15px; border-radius:15px; 
-            max-height: 90vh; overflow-y: auto; /* মোবাইলে স্ক্রল করার জন্য */
+            max-height: 90vh; overflow-y: auto;
             box-sizing: border-box; font-family: 'Courier New', monospace;
         }
         
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { padding: 8px 2px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid #eee; word-break: break-all; }
 
-        /* নিচতলার সামারি বার */
+        /* সামারি বার */
         .day-summary-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; background: #2ecc71; 
             color: white; padding: 12px; display: flex; justify-content: space-around;
@@ -61,18 +68,50 @@
 </header>
 
 <div class="container">
-    <!-- ১. তারিখের লিস্ট এখানে দেখাবে -->
+    
+    <!-- ১. তারিখ ফিল্টার সেকশন (নতুন) -->
+    <div class="filter-card">
+        <div class="filter-grid">
+            <div>
+                <label>শুরুর তারিখ</label>
+                <input type="date" id="startDate">
+            </div>
+            <div>
+                <label>শেষ তারিখ</label>
+                <input type="date" id="endDate">
+            </div>
+        </div>
+        <button class="btn-filter" onclick="fetchReports()"><i class="fa-solid fa-magnifying-glass"></i> হিসাব বের করুন</button>
+    </div>
+
+    <!-- ২. রেঞ্জ সামারি বক্স (আপনার দেওয়া নতুন কোড) -->
+    <div id="rangeSummary" class="hidden" style="background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-bottom: 5px solid #2ecc71; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-around; text-align: center;">
+        <div>
+            <small style="color: #7f8c8d;">মোট বিক্রি</small>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #2ecc71;" id="rangeTotalSales">৳ ০</div>
+        </div>
+        <div>
+            <small style="color: #7f8c8d;">মোট লাভ</small>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #9b59b6;" id="rangeTotalProfit">৳ ০</div>
+        </div>
+        <div>
+            <small style="color: #7f8c8d;">মোট মেমো</small>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #34495e;" id="rangeTotalMemos">০ টি</div>
+        </div>
+    </div>
+
+    <!-- ৩. তারিখের লিস্ট বাটনসমূহ -->
     <div id="dateListView"></div>
 
-    <!-- ২. কোনো তারিখে ক্লিক করলে ইনভয়েস লিস্ট এখানে দেখাবে -->
+    <!-- ৪. ইনভয়েস লিস্ট ভিউ -->
     <div id="invoiceListView" class="hidden">
-        <button onclick="backToDates()" style="margin-bottom:15px; padding:8px 15px; border-radius:5px; border:none; background:#95a5a6; color:white; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i> তারিখ লিস্টে ফিরুন</button>
-        <h3 id="selectedDateTitle"></h3>
+        <button onclick="backToDates()" style="margin-bottom:15px; padding:10px 15px; border-radius:8px; border:none; background:#95a5a6; color:white; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i> তারিখ লিস্টে ফিরুন</button>
+        <h3 id="selectedDateTitle" style="font-size: 1rem; color: #2c3e50;"></h3>
         <div id="invoiceContainer"></div>
     </div>
 </div>
 
-<!-- মেমো পপআপ (মোবাইল ফিক্সড) -->
+<!-- মেমো পপআপ -->
 <div id="invoiceModal">
     <div id="memoContent">
         <div style="text-align:center; border-bottom: 1px dashed #333; padding-bottom: 10px;">
@@ -103,13 +142,13 @@
     </div>
 </div>
 
-<!-- নিচে সামারি বার (যখন কোনো দিন সিলেক্ট করবেন তখন আসবে) -->
+<!-- নিচতলার সামারি বার -->
 <div id="summaryBar" class="day-summary-bar hidden">
     <div>বিক্রি<br><span id="sTotal">০</span></div>
     <div>লাভ<br><span id="sProfit">০</span></div>
     <div>আইটেম<br><span id="sQty">০</span></div>
 </div>
 
-<script src="js/reports.js?v=1.0.2"></script>
+<script src="js/reports.js?v=1.0.4"></script>
 </body>
 </html>

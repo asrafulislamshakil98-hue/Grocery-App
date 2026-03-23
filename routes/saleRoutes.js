@@ -64,18 +64,27 @@ router.get('/report/all', async (req, res) => {
         if (!req.session.userId) return res.status(401).json({ msg: "লগইন নেই" });
 
         const { startDate, endDate } = req.query;
-        let query = { userId: new mongoose.Types.ObjectId(req.session.userId) }; // নিজের ডাটা ফিল্টার
+        let query = { userId: new mongoose.Types.ObjectId(req.session.userId) };
 
         if (startDate && endDate) {
+            // শুরুর তারিখ: ওই দিনের রাত ১২:০০:০০ থেকে
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+
+            // শেষ তারিখ: ওই দিনের রাত ১১:৫৯:৫৯ পর্যন্ত
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+
             query.date = {
-                $gte: new Date(startDate),
-                $lte: new Date(new Date(endDate).setHours(23, 59, 59))
+                $gte: start,
+                $lte: end
             };
         }
 
         const sales = await Sale.find(query).sort({ date: -1 });
         res.json(sales);
     } catch (err) {
+        console.error("Report Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
