@@ -6,9 +6,10 @@ const Purchase = require('../models/Purchase');
 const upload = require('../config/cloudinary'); // ক্লাউডিনারি কনফিগ
 
 // ১. নতুন পণ্য যোগ করার মেইন রাউট (ছবি ও ইউজার আইডি সহ)
+// নতুন পণ্য যোগ করার চূড়ান্ত এবং সঠিক রাউট
 router.post('/add', upload.single('image'), async (req, res) => {
     try {
-        // নিরাপত্তা চেক: ইউজার লগইন আছে কি না
+        // ১. নিরাপত্তা চেক: ইউজার লগইন আছে কি না
         if (!req.session.userId) {
             return res.status(401).json({ msg: "সেশন শেষ হয়ে গেছে, আবার লগইন করুন!" });
         }
@@ -24,18 +25,31 @@ router.post('/add', upload.single('image'), async (req, res) => {
             paymentType 
         } = req.body;
 
-        // ১. ক্লাউডিনারি থেকে ছবির লিঙ্ক নেওয়া
-        const imageUrl = req.file ? req.file.path : "";
+        const userId = req.session.userId;
 
-        // ২. কোম্পানি খুঁজে বের করা (নিশ্চিত করা যে কোম্পানিটিও ওই ইউজারেরই)
-        let company = null;
-        if (companyId) {
-            company = await Company.findOne({ _id: companyId, userId: req.session.userId });
+        // ২. চেক করা: এই ইউজারের তালিকায় এই বারকোডটি আগে থেকে আছে কি না?
+        if (barcode && barcode !== "") {
+            const existingProduct = await Product.findOne({ 
+                barcode: barcode, 
+                userId: userId 
+            });
+            if (existingProduct) {
+                return res.status(400).json({ msg: "এই বারকোডটি আপনার তালিকায় ইতিমধ্যে আছে!" });
+            }
         }
 
-        // ৩. নতুন পণ্য ডাটাবেজে সেভ করা (userId যুক্ত করে)
+        // ৩. ক্লাউডিনারি থেকে ছবির লিঙ্ক নেওয়া
+        const imageUrl = req.file ? req.file.path : "";
+
+        // ৪. কোম্পানি খুঁজে বের করা (নিশ্চিত করা যে কোম্পানিটিও ওই ইউজারেরই)
+        let company = null;
+        if (companyId) {
+            company = await Company.findOne({ _id: companyId, userId: userId });
+        }
+
+        // ৫. নতুন পণ্য ডাটাবেজে সেভ করার অবজেক্ট তৈরি
         const newProduct = new Product({
-            userId: req.session.userId, // এই মালের মালিক এই ইউজার
+            userId: userId, 
             barcode: barcode || "",
             name: name,
             purchasePrice: Number(purchasePrice) || 0,
@@ -47,18 +61,22 @@ router.post('/add', upload.single('image'), async (req, res) => {
             image: imageUrl
         });
 
-        await newProduct.save();
-
-        // ৪. যদি কোম্পানি থেকে বাকিতে (Credit) কেনা হয়, তবে কোম্পানির বকেয়া বাড়ানো
+        // ৬. যদি কোম্পানি থেকে বাকিতে (Credit) কেনা হয়, তবে কোম্পানির বকেয়া বাড়ানো
         if (paymentType === 'credit' && company) {
-            const totalBillToCompany = Number(purchasePrice) * Number(stock);
+            const totalBillToCompany = (Number(purchasePrice) || 0) * (Number(stock) || 0);
             company.totalDue += totalBillToCompany;
             await company.save();
         }
 
+        // ৭. পণ্যটি ডাটাবেজে সেভ করা
+        await newProduct.save();
         res.status(201).json({ msg: "পণ্য ও কোম্পানির হিসাব সফলভাবে সেভ হয়েছে!" });
 
     } catch (err) {
+        // মঙ্গুজ ইনডেক্স থেকে ডুপ্লিকেট এরর হ্যান্ডলিং
+        if (err.code === 11000) {
+            return res.status(400).json({ msg: "এই বারকোডটি আপনি ইতিমধ্যে অন্য পণ্যে ব্যবহার করেছেন!" });
+        }
         console.error("পণ্য যোগ করতে ভুল হয়েছে:", err);
         res.status(500).json({ error: err.message });
     }
