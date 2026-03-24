@@ -6,11 +6,11 @@ const Purchase = require('../models/Purchase');
 const upload = require('../config/cloudinary'); // ক্লাউডিনারি কনফিগ
 
 // ১. নতুন পণ্য যোগ করার মেইন রাউট (ছবি ও ইউজার আইডি সহ)
-// নতুন পণ্য যোগ করার চূড়ান্ত এবং সঠিক রাউট
 router.post('/add', upload.single('image'), async (req, res) => {
     try {
         // ১. নিরাপত্তা চেক: ইউজার লগইন আছে কি না
         if (!req.session.userId) {
+            console.log("Error: User not logged in");
             return res.status(401).json({ msg: "সেশন শেষ হয়ে গেছে, আবার লগইন করুন!" });
         }
 
@@ -27,27 +27,31 @@ router.post('/add', upload.single('image'), async (req, res) => {
 
         const userId = req.session.userId;
 
-        // ২. চেক করা: এই ইউজারের তালিকায় এই বারকোডটি আগে থেকে আছে কি না?
-        if (barcode && barcode !== "") {
+        // ২. বারকোড লগ (Debug করার জন্য)
+        console.log(`User ${userId} is adding product: ${name}, Barcode: ${barcode}`);
+
+        // ৩. চেক করা: এই ইউজারের নিজের তালিকায় এই বারকোডটি আগে থেকে আছে কি না?
+        if (barcode && barcode.trim() !== "") {
             const existingProduct = await Product.findOne({ 
                 barcode: barcode, 
                 userId: userId 
             });
+
             if (existingProduct) {
                 return res.status(400).json({ msg: "এই বারকোডটি আপনার তালিকায় ইতিমধ্যে আছে!" });
             }
         }
 
-        // ৩. ক্লাউডিনারি থেকে ছবির লিঙ্ক নেওয়া
+        // ৪. ক্লাউডিনারি থেকে ছবির লিঙ্ক নেওয়া
         const imageUrl = req.file ? req.file.path : "";
 
-        // ৪. কোম্পানি খুঁজে বের করা (নিশ্চিত করা যে কোম্পানিটিও ওই ইউজারেরই)
+        // ৫. কোম্পানি খুঁজে বের করা (নিশ্চিত করা যে কোম্পানিটিও ওই ইউজারেরই)
         let company = null;
         if (companyId) {
             company = await Company.findOne({ _id: companyId, userId: userId });
         }
 
-        // ৫. নতুন পণ্য ডাটাবেজে সেভ করার অবজেক্ট তৈরি
+        // ৬. নতুন পণ্য ডাটাবেজে সেভ করার অবজেক্ট তৈরি
         const newProduct = new Product({
             userId: userId, 
             barcode: barcode || "",
@@ -61,41 +65,41 @@ router.post('/add', upload.single('image'), async (req, res) => {
             image: imageUrl
         });
 
-        // ৬. যদি কোম্পানি থেকে বাকিতে (Credit) কেনা হয়, তবে কোম্পানির বকেয়া বাড়ানো
+        // ৭. যদি কোম্পানি থেকে বাকিতে (Credit) কেনা হয়, তবে কোম্পানির বকেয়া বাড়ানো
         if (paymentType === 'credit' && company) {
             const totalBillToCompany = (Number(purchasePrice) || 0) * (Number(stock) || 0);
             company.totalDue += totalBillToCompany;
             await company.save();
+            console.log(`Updated company ${company.name} due by ${totalBillToCompany}`);
         }
 
-        // ৭. পণ্যটি ডাটাবেজে সেভ করা
+        // ৮. পণ্যটি ডাটাবেজে সেভ করা
         await newProduct.save();
         res.status(201).json({ msg: "পণ্য ও কোম্পানির হিসাব সফলভাবে সেভ হয়েছে!" });
 
     } catch (err) {
-        // মঙ্গুজ ইনডেক্স থেকে ডুপ্লিকেট এরর হ্যান্ডলিং
+        // মঙ্গুজ ইনডেক্স থেকে ডুপ্লিকেট এরর হ্যান্ডলিং (Code 11000)
         if (err.code === 11000) {
+            console.log("Duplicate index error caught.");
             return res.status(400).json({ msg: "এই বারকোডটি আপনি ইতিমধ্যে অন্য পণ্যে ব্যবহার করেছেন!" });
         }
-        console.error("পণ্য যোগ করতে ভুল হয়েছে:", err);
+        
+        console.error("আসল এরর মেসেজ:", err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
-// ২. শুধু নিজের দোকানের পণ্যের লিস্ট দেখার এপিআই
+// সব পণ্যের লিস্ট দেখার এপিআই (UserId ফিল্টারসহ)
 router.get('/all', async (req, res) => {
     try {
-        if (!req.session.userId) {
-            return res.status(401).json({ msg: "লগইন প্রয়োজন!" });
-        }
-
-        // শুধু লগইন থাকা ইউজারের মালগুলোই খুঁজে বের করবে
+        if (!req.session.userId) return res.status(401).json({ msg: "লগইন করুন" });
         const products = await Product.find({ userId: req.session.userId }).sort({ _id: -1 });
         res.json(products);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 // পণ্য ডিলিট করার এপিআই (আগে যা ছিল)
 router.delete('/:id', async (req, res) => {

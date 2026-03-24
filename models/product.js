@@ -1,14 +1,9 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    userId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
-    },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
-    // এখান থেকে unique: true সরিয়ে ফেলা হয়েছে
-    barcode: { type: String, sparse: true }, 
+    barcode: { type: String, default: "" }, // এখানে কোনো unique বা sparse রাখার দরকার নেই
     purchasePrice: { type: Number, default: 0 },
     price: { type: Number, required: true },
     stock: { type: Number, required: true },
@@ -18,7 +13,7 @@ const productSchema = new mongoose.Schema({
     companyName: String
 }, { timestamps: true });
 
-// এটিই আসল সমাধান: userId এবং barcode একসাথে ইউনিক হবে
+// কোডের শেষে শুধু এই একটি ইনডেক্স থাকবে যা ইউজার ভিত্তিক বারকোড ইউনিক করবে
 productSchema.index({ userId: 1, barcode: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);
