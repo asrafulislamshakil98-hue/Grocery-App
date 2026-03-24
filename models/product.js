@@ -14,6 +14,5 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // কোডের শেষে শুধু এই একটি ইনডেক্স থাকবে যা ইউজার ভিত্তিক বারকোড ইউনিক করবে
-productSchema.index({ userId: 1, barcode: 1 }, { unique: true });
-
+productSchema.index({ userId: 1, barcode: 1 }, { unique: true, name: "user_barcode_unique" });
 module.exports = mongoose.model('Product', productSchema);
