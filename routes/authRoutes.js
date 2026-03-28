@@ -145,4 +145,37 @@ router.put('/super-admin/reset-user-password', async (req, res) => {
     }
 });
 
+router.delete('/delete-account', async (req, res) => {
+    try {
+        const { password } = req.body;
+        const userId = req.session.userId;
+
+        if (!userId) return res.status(401).json({ msg: "লগইন নেই" });
+
+        const user = await User.findById(userId);
+        
+        // ১. পাসওয়ার্ড চেক করা
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ msg: "পাসওয়ার্ড সঠিক নয়!" });
+
+        // ২. ইউজারের সব ডাটা ডিলিট করা (Cleanup)
+        await Product.deleteMany({ userId });
+        await Sale.deleteMany({ userId });
+        await Expense.deleteMany({ userId });
+        await Customer.deleteMany({ userId });
+        await Company.deleteMany({ userId });
+        await Purchase.deleteMany({ userId });
+
+        // ৩. মেইন ইউজার অ্যাকাউন্ট ডিলিট করা
+        await User.findByIdAndDelete(userId);
+
+        // ৪. সেশন ক্লিয়ার করা
+        req.session.destroy();
+        
+        res.json({ msg: "অ্যাকাউন্ট সফলভাবে ডিলিট হয়েছে" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

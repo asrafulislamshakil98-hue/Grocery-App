@@ -253,4 +253,33 @@ function openPassChange() {
     };
 }
 
+async function deleteMyAccount() {
+    const confirmation = confirm("সতর্কতা! আপনি কি নিশ্চিতভাবে আপনার অ্যাকাউন্ট এবং দোকানের সব ডাটা (পণ্য, বিক্রি, হিসাব) চিরতরে মুছে ফেলতে চান? এটি আর ফিরে পাওয়া যাবে না!");
+
+    if (confirmation) {
+        const password = prompt("নিরাপত্তার জন্য আপনার বর্তমান পাসওয়ার্ডটি লিখুন:");
+        
+        if (!password) return;
+
+        try {
+            const res = await fetch('/api/auth/delete-account', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                alert("আপনার অ্যাকাউন্ট এবং সব ডাটা সফলভাবে মুছে ফেলা হয়েছে।");
+                window.location.href = 'register.html';
+            } else {
+                alert("ভুল হয়েছে: " + result.msg);
+            }
+        } catch (err) {
+            alert("সার্ভারে সমস্যা হচ্ছে!");
+        }
+    }
+}
+
 function closeActionModal() { document.getElementById('actionModal').style.display = 'none'; }
