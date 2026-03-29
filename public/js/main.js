@@ -206,10 +206,10 @@ function closeSettingsMenu() {
 }
 
 // ১. প্রাইভেসি পলিসি
-function showPrivacy() {
-    alert("প্রাইভেসি পলিসি:\n১. আপনার ডাটা সম্পূর্ণ নিরাপদ।\n২. আমরা কোনো তথ্য তৃতীয় পক্ষের কাছে শেয়ার করি না।\n৩. আপনার পাসওয়ার্ড এনক্রিপ্টেড অবস্থায় থাকে।");
+// প্রাইভেসি পেজে যাওয়ার ফাংশন
+function goToPrivacy() {
+    window.location.href = 'privacy.html';
 }
-
 // ২. ইউজার পরিবর্তন মডাল
 function openUserChange() {
     document.getElementById('actionTitle').innerText = "নতুন ইউজার নেম দিন";
